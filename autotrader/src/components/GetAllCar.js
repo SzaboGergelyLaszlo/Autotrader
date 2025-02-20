@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
+import DeleteCar from './DeleteCar'
 
-function GetallCars() {
+function GetallCars(props) {
     const url = "https://localhost:7240/cars"
     const [carData, setCardata] = useState([])
 
@@ -22,7 +23,7 @@ function GetallCars() {
                 setCardata(response.result)
                 console.log(response.meesage)
             })()
-        }, [carData])
+        }, [props.count])
 
         const carElements = carData.map(
             car =>{
@@ -32,6 +33,7 @@ function GetallCars() {
                        <div class="card-body">{car.type}</div>
                        <div class="card-body">{car.color}</div>
                        <div class="card-footer">{car.myear}</div>
+                       <div><DeleteCar carId = {car.id} handleCount = {props.handleCount}/></div>
                     </div>
                 )
             }
