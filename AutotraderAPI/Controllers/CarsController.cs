@@ -1,6 +1,7 @@
 ﻿using AutotraderAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Security.Cryptography.X509Certificates;
 
@@ -11,7 +12,7 @@ namespace AutotraderAPI.Controllers
     public class CarsController : ControllerBase
     {
         [HttpPost]
-        public ActionResult AddNewCar(CreateCarDto createCarDto)
+        public async Task<ActionResult> AddNewCar(CreateCarDto createCarDto)
         {
             var car = new Car
             {
@@ -24,19 +25,19 @@ namespace AutotraderAPI.Controllers
 
             using (var context = new AutotraderContext())
             {
-                context.Cars.Add(car);
-                context.SaveChanges();
+                await context.Cars.AddAsync(car);
+                await context.SaveChangesAsync();
 
                 return StatusCode(201, new { result = car, message = "Sikeres felvétel!" });
             }
         }
 
         [HttpGet]
-        public ActionResult GetAllCar()
+        public async Task<ActionResult> GetAllCar()
         {
             using (var context = new AutotraderContext())
             {
-                var cars = context.Cars.ToList();
+                var cars = await context.Cars.ToListAsync();
 
                 if (cars != null)
                 {
@@ -48,11 +49,11 @@ namespace AutotraderAPI.Controllers
         }
 
         [HttpGet("ById")]
-        public ActionResult GetCar(Guid id)
+        public async Task<ActionResult> GetCar(Guid id)
         {
             using (var context = new AutotraderContext())
             {
-                var car = context.Cars.FirstOrDefault(x => x.Id == id);
+                var car = await context.Cars.FirstOrDefaultAsync(x => x.Id == id);
 
                 if (car != null)
                 {
@@ -64,16 +65,16 @@ namespace AutotraderAPI.Controllers
 
         [HttpDelete]
 
-        public ActionResult DeleteCar(Guid id)
+        public async Task<ActionResult> DeleteCar(Guid id)
         {
             using (var context = new AutotraderContext())
             {
-                var car = context.Cars.FirstOrDefault(x => x.Id == id);
+                var car = await context.Cars.FirstOrDefaultAsync(x => x.Id == id);
 
                 if (car != null)
                 {
                     context.Cars.Remove(car);
-                    context.SaveChanges();
+                    await context.SaveChangesAsync();
 
                     return Ok(new { result = car, message = "Sikeres törlés!" });
                 }
@@ -83,11 +84,11 @@ namespace AutotraderAPI.Controllers
         }
         [HttpPut]
 
-        public ActionResult UpdateCar(Guid id, UpdateCarDto updateCarDto)
+        public async Task<ActionResult> UpdateCar(Guid id, UpdateCarDto updateCarDto)
         {
             using (var context = new AutotraderContext())
             {
-                var existingcar = context.Cars.FirstOrDefault(x => x.Id == id);
+                var existingcar = await context.Cars.FirstOrDefaultAsync(x => x.Id == id);
 
                 if (existingcar != null)
                 {
@@ -98,7 +99,7 @@ namespace AutotraderAPI.Controllers
                     existingcar.UpdatedTime = DateTime.Now;
 
                     context.Cars.Update(existingcar);
-                    context.SaveChanges();
+                    await context.SaveChangesAsync();
 
                     return Ok(new { result = existingcar, message = "Sikeres módosítás!" });
                 }
