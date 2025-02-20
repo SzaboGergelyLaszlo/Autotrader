@@ -11,6 +11,13 @@ namespace AutotraderAPI.Controllers
     [ApiController]
     public class CarsController : ControllerBase
     {
+        private readonly AutotraderContext _context;
+
+        public CarsController(AutotraderContext context)
+        {
+            _context = context;
+        }
+
         [HttpPost]
         public async Task<ActionResult> AddNewCar(CreateCarDto createCarDto)
         {
@@ -25,8 +32,8 @@ namespace AutotraderAPI.Controllers
 
             using (var context = new AutotraderContext())
             {
-                await context.Cars.AddAsync(car);
-                await context.SaveChangesAsync();
+                await _context.Cars.AddAsync(car);
+                await _context.SaveChangesAsync();
 
                 return StatusCode(201, new { result = car, message = "Sikeres felvétel!" });
             }
@@ -35,77 +42,73 @@ namespace AutotraderAPI.Controllers
         [HttpGet]
         public async Task<ActionResult> GetAllCar()
         {
-            using (var context = new AutotraderContext())
-            {
-                var cars = await context.Cars.ToListAsync();
 
-                if (cars != null)
-                {
-                    return Ok(new { result = cars, message = "Sikeres lekérés!" });
-                }
-                Exception e = new();
-                return BadRequest(new { result = "", message = e.Message });
+            var cars = await _context.Cars.ToListAsync();
+
+            if (cars != null)
+            {
+                return Ok(new { result = cars, message = "Sikeres lekérés!" });
             }
+            Exception e = new();
+            return BadRequest(new { result = "", message = e.Message });
+
         }
 
         [HttpGet("ById")]
         public async Task<ActionResult> GetCar(Guid id)
         {
-            using (var context = new AutotraderContext())
-            {
-                var car = await context.Cars.FirstOrDefaultAsync(x => x.Id == id);
 
-                if (car != null)
-                {
-                    return Ok(new { result = car, message = "Sikeres lekérés!" });
-                }
-                return NotFound(new { result = "", message = "Nincs ilyen auto az adatbázisban!" });
+            var car = await _context.Cars.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (car != null)
+            {
+                return Ok(new { result = car, message = "Sikeres lekérés!" });
             }
+            return NotFound(new { result = "", message = "Nincs ilyen auto az adatbázisban!" });
+
         }
 
         [HttpDelete]
 
         public async Task<ActionResult> DeleteCar(Guid id)
         {
-            using (var context = new AutotraderContext())
+
+            var car = await _context.Cars.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (car != null)
             {
-                var car = await context.Cars.FirstOrDefaultAsync(x => x.Id == id);
+                _context.Cars.Remove(car);
+                await _context.SaveChangesAsync();
 
-                if (car != null)
-                {
-                    context.Cars.Remove(car);
-                    await context.SaveChangesAsync();
-
-                    return Ok(new { result = car, message = "Sikeres törlés!" });
-                }
-
-                return NotFound(new { result = "", message = "Nincs ilyen auto az adatbázisban!" });
+                return Ok(new { result = car, message = "Sikeres törlés!" });
             }
+
+            return NotFound(new { result = "", message = "Nincs ilyen auto az adatbázisban!" });
+
         }
         [HttpPut]
 
         public async Task<ActionResult> UpdateCar(Guid id, UpdateCarDto updateCarDto)
         {
-            using (var context = new AutotraderContext())
+
+            var existingcar = await _context.Cars.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (existingcar != null)
             {
-                var existingcar = await context.Cars.FirstOrDefaultAsync(x => x.Id == id);
+                existingcar.Brand = updateCarDto.Brand;
+                existingcar.Type = updateCarDto.Type;
+                existingcar.Color = updateCarDto.Color;
+                existingcar.Myear = updateCarDto.Myear;
+                existingcar.UpdatedTime = DateTime.Now;
 
-                if (existingcar != null)
-                {
-                    existingcar.Brand = updateCarDto.Brand;
-                    existingcar.Type = updateCarDto.Type;
-                    existingcar.Color = updateCarDto.Color;
-                    existingcar.Myear = updateCarDto.Myear;
-                    existingcar.UpdatedTime = DateTime.Now;
+                _context.Cars.Update(existingcar);
+                await _context.SaveChangesAsync();
 
-                    context.Cars.Update(existingcar);
-                    await context.SaveChangesAsync();
-
-                    return Ok(new { result = existingcar, message = "Sikeres módosítás!" });
-                }
-
-                return NotFound(new { result = "", message = "Nincs ilyen auto az adatbázisban!" });
+                return Ok(new { result = existingcar, message = "Sikeres módosítás!" });
             }
+
+            return NotFound(new { result = "", message = "Nincs ilyen auto az adatbázisban!" });
+
 
         }
     }
