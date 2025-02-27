@@ -1,6 +1,9 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import UpdateCar from './UpdateCar';
 
 function AddNewCar(props) {
+
+
     const [carData, setCardata] = useState(
         {
             brand: "",
@@ -8,6 +11,24 @@ function AddNewCar(props) {
             color: "",
             myear: ""
         })
+
+useEffect(() =>
+    {
+    if (props.carObjData)
+        {
+            setCardata({
+                brand : props.carObjData.brand || '',
+                type : props.carObjData.type || '',
+                color : props.carObjData.color || '',
+                myear : props.carObjData.myear 
+                ? new Date(new Date(props.carObjData.myear).getTime() - new Date().getTimezoneOffset() * 60000)
+                .toISOString()
+                .split('T')[0]
+              : ''
+          });
+        }
+}, [props.carObjData]);
+        
 
     const handleChange = (event) => {
         const { name, value } = event.target
@@ -46,12 +67,12 @@ function AddNewCar(props) {
                     type = 'text'
                     id = 'brand'
                     name = 'brand'
+                    //value={carData.brand}
                     value={carData.brand}
                     onChange={handleChange}
-                    className=''
+                    className='form-control'
                     placeholder='Autó márkája'
                 />
-                <br/>
                 <label>Típus: </label>
                 <input
                     type = 'text'
@@ -59,10 +80,9 @@ function AddNewCar(props) {
                     name = 'type'
                     value={carData.type}
                     onChange={handleChange}
-                    className=''
+                    className='form-control'
                     placeholder='Autó típusa'
                 />
-                <br/>
                 <label>Szín: </label>
                 <input
                     type = 'text'
@@ -70,22 +90,21 @@ function AddNewCar(props) {
                     name = 'color'
                     value={carData.color}
                     onChange={handleChange}
-                    className=''
+                    className='form-control'
                     placeholder='Autó színe'
                 />
-                <br/>
                 <label>Gyártási dátum: </label>
-                
                 <input
                     type = 'date'
                     id = 'myear'
                     name = 'myear'
                     value={carData.myear}
                     onChange={handleChange}
-                    className=''
+                    className='form-control'
                     placeholder='Autó gyártási dátuma'
                 />
                 <button type='submit' className='btn btn-primary'>Elküld</button>
+                <UpdateCar carData={carData} carId={props.carObjData.id} handleCount={props.handleCount}/>
             </form>
 
         </div>
